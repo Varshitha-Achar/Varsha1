@@ -1,19 +1,46 @@
-stage('Push Image to Repository') {
-    steps {
-        script {
-            // 1. securely injects your registry credentials
-            withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
-                                              passwordVariable: 'DOCKER_PASSWORD', 
-                                              usernameVariable: 'DOCKER_USERNAME')]) {
-                
-                // 2. Log in securely (piping the password avoids exposing it in logs)
-                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                
-                // 3. Push the specific version tag
-                sh "docker push yourusername/your-image-name:${env.BUILD_NUMBER}"
-                
-                // 4. (Optional) Push the 'latest' tag
-                sh "docker push yourusername/your-image-name:latest"
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = 'Docker-credentials'
+        IMAGE_NAME = 'shilpakevala/new_docker_image'
+    }
+
+    stages {
+
+        stage('Build Java Application') {
+            steps {
+                bat 'javac HelloWorld.java'
+            }
+        }
+
+        stage('Run Java Program') {
+            steps {
+                bat 'java HelloWorld'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t %IMAGE_NAME%:latest .'
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                credentialsId: 'Docker-credentials',
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS')]) {
+
+                    bat 'echo %PASS% | docker login -u %USER% --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                bat 'docker push %IMAGE_NAME%:latest'
             }
         }
     }
