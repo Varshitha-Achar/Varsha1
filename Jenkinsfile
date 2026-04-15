@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'Varsha'
+        DOCKERHUB_CREDENTIALS = 'varshz'
         IMAGE_NAME = 'varshz/new_docker_image'
     }
 
