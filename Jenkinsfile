@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = 'Docker-credentials'
-        IMAGE_NAME = 'shilpakevala/new_docker_image'
+        IMAGE_NAME = 'varshz/new_docker_image'
     }
 
     stages {
@@ -30,8 +30,8 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                 credentialsId: 'Docker-credentials',
-                usernameVariable: 'varshz',
-                passwordVariable: 'Varsha@123')]) {
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS')]) {
 
                     bat 'echo %PASS% | docker login -u %USER% --password-stdin'
                 }
