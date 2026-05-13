@@ -1,47 +1,65 @@
 pipeline {
     agent any
+
     environment {
-        DOCKERHUB_CREDENTIALS = 'varshz'
-        IMAGE_NAME = 'varshz'
-}
+        // ID of the credentials stored in Jenkins
+        DOCKERHUB_CREDENTIALS = 'varshz' 
+        // Your Docker Hub image repository
+        IMAGE_NAME = 'varshz/java-app'
+    }
 
-stages {
+    stages {
+        stage('Build Java Application') {
+            steps {
+                // Compiles the Java file
+                bat 'javac HelloWorld.java'
+            }
+        }
 
-stage(&#39;Build Java Application&#39;) {
-steps {
-bat &#39;javac HelloWorld.java&#39;
-}
-}
+        stage('Run Java Program') {
+            steps {
+                // Runs the program to ensure it works before bottling it up
+                bat 'java HelloWorld'
+            }
+        }
 
-stage(&#39;Run Java Program&#39;) {
-steps {
-bat &#39;java HelloWorld&#39;
-}
-}
+        stage('Build Docker Image') {
+            steps {
+                // Builds the image using the local Dockerfile
+                bat "docker build -t ${IMAGE_NAME}:latest ."
+            }
+        }
 
-stage(&#39;Build Docker Image&#39;) {
-steps {
-bat &#39;docker build -t %IMAGE_NAME%:latest .&#39;
-}
-}
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKERHUB_CREDENTIALS}",
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS')]) {
+                    
+                    // Using PowerShell to avoid the 'trailing space' bug in Windows Batch
+                    powershell 'echo $env:PASS | docker login -u $env:USER --password-stdin'
+                }
+            }
+        }
 
-stage(&#39;Login to DockerHub&#39;) {
-steps {
-withCredentials([usernamePassword(
-
-credentialsId: 'Docker-credentials'
-usernameVariable: &#39;USER&#39;,
-passwordVariable: &#39;PASS&#39;)]) {
-
-bat &#39;echo %PASS%| docker login -u %USER% --password-stdin&#39;
-}
-}
-}
-
-stage(&#39;Push Docker Image&#39;) {
-steps {
-bat &#39;docker push %IMAGE_NAME%:latest&#39;
-}
-}
-}
+        stage('Push Docker Image') {
+            steps {
+                bat "docker push ${IMAGE_NAME}:latest"
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up the local image to save disk space on the Jenkins agent
+            bat "docker rmi ${IMAGE_NAME}:latest || exit 0"
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs for credential or syntax errors.'
+        }
+    }
 }
