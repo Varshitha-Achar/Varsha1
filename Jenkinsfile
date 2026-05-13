@@ -2,30 +2,29 @@ pipeline {
     agent any
 
     environment {
-        // ID of the credentials stored in Jenkins
-        DOCKERHUB_CREDENTIALS = 'varshz' 
-        // Your Docker Hub image repository
-        IMAGE_NAME = 'varshz/java-app'
+        // Defined here once to avoid typing errors later
+        DOCKER_CREDS_ID = 'Docker-credentials'
+        IMAGE_NAME      = 'shilpakevala/new_docker_image'
     }
 
     stages {
         stage('Build Java Application') {
             steps {
-                // Compiles the Java file
+                // Compiles the Java source file
                 bat 'javac HelloWorld.java'
             }
         }
 
         stage('Run Java Program') {
             steps {
-                // Runs the program to ensure it works before bottling it up
+                // Verifies the program runs before building the container
                 bat 'java HelloWorld'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                // Builds the image using the local Dockerfile
+                // Builds the image. Using double quotes allows Groovy to inject the variable.
                 bat "docker build -t ${IMAGE_NAME}:latest ."
             }
         }
@@ -33,12 +32,13 @@ pipeline {
         stage('Login to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: "${DOCKERHUB_CREDENTIALS}",
+                    credentialsId: "${DOCKER_CREDS_ID}",
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS')]) {
                     
-                    // Using PowerShell to avoid the 'trailing space' bug in Windows Batch
-                    powershell 'echo $env:PASS | docker login -u $env:USER --password-stdin'
+                    // 1. We use PowerShell to handle the password pipe safely.
+                    // 2. We use 'Write-Output' which handles special characters better than 'echo'.
+                    powershell 'Write-Output $env:PASS | docker login -u $env:USER --password-stdin'
                 }
             }
         }
@@ -49,17 +49,14 @@ pipeline {
             }
         }
     }
-    
+
     post {
-        always {
-            // Clean up the local image to save disk space on the Jenkins agent
-            bat "docker rmi ${IMAGE_NAME}:latest || exit 0"
-        }
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Successfully pushed ${IMAGE_NAME} to DockerHub."
         }
-        failure {
-            echo 'Pipeline failed. Check the logs for credential or syntax errors.'
+        cleanup {
+            // Optional: Remove local image to save disk space on the Jenkins agent
+            bat "docker rmi ${IMAGE_NAME}:latest || exit 0"
         }
     }
 }
