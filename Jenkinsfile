@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = 'varshz'
-        IMAGE_NAME = 'varshz1/java-app'
+        IMAGE_NAME = 'varshz/java-app'
     }
 
     stages {
