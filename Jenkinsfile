@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = 'varshz'
-        IMAGE_NAME = 'varshz/new_docker_image'
+        IMAGE_NAME = 'varshz1/new_docker_image'
     }
 
     stages {
