@@ -28,12 +28,15 @@ pipeline {
 
         stage('Login to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'varshz', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    bat '(echo %PASS%)| docker login -u %USER% --password-stdin'
+                withCredentials([usernamePassword(
+                    credentialsId: 'varshz',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS')]) {
+                    bat '(echo %PASS%)| docker login -u %USER% --password-stdin 
                 }
             }
         }
-
+ 
         stage('Push Docker Image') {
             steps {
                 bat 'docker push %IMAGE_NAME%:latest'
