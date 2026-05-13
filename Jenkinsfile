@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = 'varshz'
-        IMAGE_NAME = 'varshz1/new_docker_image'
+        IMAGE_NAME = 'varshz1/java-app'
     }
 
     stages {
@@ -29,9 +29,9 @@ pipeline {
         stage('Login to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
-                credentialsId: 'varshz',
-                usernameVariable: 'USER',
-                passwordVariable: 'PASS')]) {
+                    credentialsId: 'varshz',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS')]) {
 
                     bat 'echo %PASS% | docker login -u %USER% --password-stdin'
                 }
