@@ -1,46 +1,47 @@
 pipeline {
     agent any
-
     environment {
         DOCKERHUB_CREDENTIALS = 'varshz'
-        IMAGE_NAME = 'varshz/java-app'
-    }
+        IMAGE_NAME = 'varshz'
+}
 
-    stages {
+stages {
 
-        stage('Build Java Application') {
-            steps {
-                bat 'javac HelloWorld.java'
-            }
-        }
+stage(&#39;Build Java Application&#39;) {
+steps {
+bat &#39;javac HelloWorld.java&#39;
+}
+}
 
-        stage('Run Java Program') {
-            steps {
-                bat 'java HelloWorld'
-            }
-        }
+stage(&#39;Run Java Program&#39;) {
+steps {
+bat &#39;java HelloWorld&#39;
+}
+}
 
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t %IMAGE_NAME%:latest .'
-            }
-        }
+stage(&#39;Build Docker Image&#39;) {
+steps {
+bat &#39;docker build -t %IMAGE_NAME%:latest .&#39;
+}
+}
 
-        stage('Login to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'Docker-credentials',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS')]) {
-                    bat '(echo %PASS%)| docker login -u %USER% --password-stdin 
-                }
-            }
-        }
- 
-        stage('Push Docker Image') {
-            steps {
-                bat 'docker push %IMAGE_NAME%:latest'
-            }
-        }
-    }
+stage(&#39;Login to DockerHub&#39;) {
+steps {
+withCredentials([usernamePassword(
+
+credentialsId: 'Docker-credentials'
+usernameVariable: &#39;USER&#39;,
+passwordVariable: &#39;PASS&#39;)]) {
+
+bat &#39;echo %PASS%| docker login -u %USER% --password-stdin&#39;
+}
+}
+}
+
+stage(&#39;Push Docker Image&#39;) {
+steps {
+bat &#39;docker push %IMAGE_NAME%:latest&#39;
+}
+}
+}
 }
